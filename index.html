@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Monapoliy Android Pastel Edition</title>
+    <!-- Tailwind CSS for modern pastel UI -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f3f4f6;
+            color: #374151;
+            touch-action: manipulation;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        /* Android Phone Frame Simulation Container with Pastel Aesthetics */
+        .android-frame {
+            max-width: 440px;
+            height: 100vh;
+            max-height: 940px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            background: linear-gradient(135deg, #fdf8f6 0%, #f0fdf4 50%, #eff6ff 100%);
+            box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.15), 0 0 30px rgba(167, 139, 250, 0.1);
+            position: relative;
+            overflow: hidden;
+            border: 4px solid #e5e7eb;
+        }
+        @media (min-width: 441px) {
+            .android-frame {
+                border-radius: 40px;
+                border: 10px solid #e5e7eb;
+                margin-top: 12px;
+                margin-bottom: 12px;
+            }
+        }
+        /* Classic Monopoly Physical Board Grid Layout: 5x5 Grid with Warm Pastel Wood & Soft Borders */
+        .monopoly-board {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            grid-template-rows: repeat(5, 1fr);
+            gap: 4px;
+            background-color: #e2e8f0; /* Soft pastel board frame */
+            padding: 6px;
+            border-radius: 20px;
+            width: 100%;
+            aspect-ratio: 1;
+            box-shadow: 0 12px 30px -8px rgba(0,0,0,0.08), inset 0 2px 4px rgba(255,255,255,0.6);
+        }
+        .board-tile {
+            background-color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2px;
+            border-radius: 8px;
+            font-size: 7.5px;
+            font-weight: 700;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04), inset 0 1px 2px rgba(255,255,255,0.8);
+            transition: transform 0.15s ease, background-color 0.2s;
+        }
+        .board-tile:active {
+            transform: scale(0.95);
+        }
+        .center-board {
+            grid-column: 2 / 5;
+            grid-row: 2 / 5;
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+            border-radius: 14px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 6px;
+            text-align: center;
+            border: 2px dashed #cbd5e1;
+            box-shadow: inset 0 2px 6px rgba(0,0,0,0.03);
+        }
+        .player-token {
+            width: 26px;
+            height: 26px;
+            background: linear-gradient(135deg, #f43f5e 0%, #fb7185 100%);
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            box-shadow: 0 6px 12px rgba(244, 63, 94, 0.3);
+            position: absolute;
+            z-index: 25;
+            transition: all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .owned-tag {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #34d399;
+            border: 1.5px solid #ffffff;
+            box-shadow: 0 0 4px #34d399;
+        }
+        /* Android Pastel Button Effects */
+        .android-btn {
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.1s ease, box-shadow 0.2s ease;
+        }
+        .android-btn:active {
+            transform: scale(0.96);
+        }
+        .dice-box {
+            background: linear-gradient(135deg, #fb7185 0%, #f43f5e 100%);
+            box-shadow: 0 8px 20px rgba(244, 63, 94, 0.25), inset 0 2px 4px rgba(255, 255, 255, 0.4);
+        }
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-0 md:p-4">
+
+    <!-- Android Device Wrapper -->
+    <div class="android-frame w-full flex flex-col justify-between">
+        
+        <!-- Android Status Bar -->
+        <div class="bg-white/80 backdrop-blur px-4 py-3 flex justify-between items-center border-b border-slate-100 text-[11px] font-bold z-30 shadow-xs">
+            <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span class="text-slate-700 tracking-wide">MONAPOLIY 🌸</span>
+            </div>
+            <div class="flex items-center gap-3">
+                <span class="text-amber-600 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-100">⭐ <strong id="scoreDisplay">0</strong></span>
+                <span class="text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-100">💰 Rp<strong id="moneyDisplay">2500</strong></span>
+            </div>
+        </div>
+
+        <!-- Main Screen Area -->
+        <div class="flex-1 flex flex-col p-3 overflow-y-auto relative">
+            
+            <!-- Welcome / Physical Board Start View -->
+            <div id="startScreen" class="flex flex-col items-center justify-center h-full text-center py-2">
+                <!-- Physical Board Preview Box Art -->
+                <div class="w-32 h-32 bg-gradient-to-tr from-rose-200 via-pink-200 to-amber-200 rounded-3xl p-2.5 shadow-xl mb-4 border-4 border-white relative flex items-center justify-center transform rotate-1 hover:rotate-0 transition-transform">
+                    <div class="absolute inset-2 border-2 border-dashed border-white/80 rounded-2xl flex flex-col items-center justify-center bg-white/90 shadow-xs">
+                        <span class="text-4xl animate-bounce">🎠</span>
+                        <span class="text-[9px] font-extrabold text-rose-500 tracking-wider mt-1">MONAPOLIY</span>
+                    </div>
+                </div>
+                
+                <h1 class="text-xl font-extrabold text-slate-800 mb-1.5">Monapoliy Edukasi Pastel</h1>
+                <p class="text-slate-500 text-xs px-2 mb-4 leading-relaxed">
+                    Mainkan papan monapoliy edukatif dengan sentuhan warna pastel yang manis dan bank soal diperluas!
+                </p>
+
+                <div class="grid grid-cols-2 gap-2.5 w-full mb-5">
+                    <div class="bg-white/80 backdrop-blur border border-slate-100 rounded-2xl p-3 text-left shadow-xs">
+                        <div class="text-rose-500 text-sm font-bold mb-0.5">🏛️ 12 Properti</div>
+                        <div class="text-[10px] text-slate-400">Sains, Sejarah, & Teknologi</div>
+                    </div>
+                    <div class="bg-white/80 backdrop-blur border border-slate-100 rounded-2xl p-3 text-left shadow-xs">
+                        <div class="text-emerald-500 text-sm font-bold mb-0.5">💡 Bank Soal Luas</div>
+                        <div class="text-[10px] text-slate-400">Ratusan variasi pertanyaan</div>
+                    </div>
+                </div>
+
+                <button onclick="startGame()" class="android-btn w-full py-4 bg-gradient-to-r from-rose-400 via-pink-400 to-amber-400 text-white font-extrabold rounded-2xl shadow-lg shadow-rose-400/25 text-sm flex items-center justify-center gap-2 tracking-wide">
+                    <span>✨</span> Mulai Petualangan Papan
+                </button>
+            </div>
+
+            <!-- Game Board View -->
+            <div id="gameScreen" class="hidden flex-col h-full justify-between">
+                
+                <!-- Game Info Header -->
+                <div class="flex justify-between items-center mb-2 bg-white/80 backdrop-blur p-2.5 rounded-2xl border border-slate-100 text-xs shadow-xs">
+                    <div>
+                        <span class="text-slate-400">Giliran:</span> 
+                        <span id="turnDisplay" class="font-bold text-rose-500">1 / 15</span>
+                    </div>
+                    <div id="statusMessage" class="text-indigo-500 font-semibold truncate max-w-[175px]">
+                        Lempar dadu untuk mulai!
+                    </div>
+                </div>
+
+                <!-- 5x5 Classic Monopoly Physical Board Grid (16 outer perimeter tiles) -->
+                <div class="relative w-full aspect-square my-auto">
+                    <!-- Player Token -->
+                    <div id="playerToken" class="player-token">🐰</div>
+
+                    <div class="monopoly-board w-full h-full">
+                        
+                        <!-- ROW 1 (Top Row: Indices 0 to 4 from Left to Right) -->
+                        <div id="tile-0" class="board-tile border-t-4 border-amber-300 bg-amber-50/50">
+                            <span class="text-sm">🚀</span>
+                            <span class="text-[7px] text-amber-600 font-extrabold">START</span>
+                        </div>
+                        <div id="tile-1" class="board-tile border-t-4 border-emerald-300">
+                            <span class="text-sm">🧬</span>
+                            <span class="text-[7px] text-slate-600">Sains Bio</span>
+                            <span id="owner-1" class="hidden owned-tag"></span>
+                        </div>
+                        <div id="tile-2" class="board-tile border-t-4 border-pink-300 bg-pink-50/40">
+                            <span class="text-sm">🎁</span>
+                            <span class="text-[7px] text-pink-600">Dana Umum</span>
+                        </div>
+                        <div id="tile-3" class="board-tile border-t-4 border-emerald-300">
+                            <span class="text-sm">🔬</span>
+                            <span class="text-[7px] text-slate-600">Fisika</span>
+                            <span id="owner-3" class="hidden owned-tag"></span>
+                        </div>
+                        <div id="tile-4" class="board-tile border-t-4 border-purple-300">
+                            <span class="text-sm">🏛️</span>
+                            <span class="text-[7px] text-slate-600">Sejarah</span>
+                            <span id="owner-4" class="hidden owned-tag"></span>
+                        </div>
+
+                        <!-- ROW 2 (Left col index 15, Right col index 5) -->
+                        <div id="tile-15" class="board-tile border-l-4 border-rose-300">
+                            <span class="text-sm">🌍</span>
+                            <span class="text-[7px] text-slate-600">Geografi</span>
+                            <span id="owner-15" class="hidden owned-tag"></span>
+                        </div>
+                        <!-- Center Physical Board Logo / Info Area -->
+                        <div class="center-board">
+                            <div class="text-[10px] font-extrabold text-rose-500 tracking-wider mb-0.5">MONAPOLIY</div>
+                            <div class="w-8 h-0.5 bg-rose-300/50 mb-1 rounded"></div>
+                            <div id="centerInfo" class="text-[8px] text-slate-500 text-center px-1 leading-tight">
+                                Papan Edukasi Ceria Android
+                            </div>
+                        </div>
+                        <div id="tile-5" class="board-tile border-r-4 border-blue-300">
+                            <span class="text-sm">📐</span>
+                            <span class="text-[7px] text-slate-600">Aljabar</span>
+                            <span id="owner-5" class="hidden owned-tag"></span>
+                        </div>
+
+                        <!-- ROW 3 (Left col index 14, Right col index 6) -->
+                        <div id="tile-14" class="board-tile border-l-4 border-amber-300 bg-amber-50/40">
+                            <span class="text-sm">💡</span>
+                            <span class="text-[7px] text-amber-600">Pojok Ide</span>
+                        </div>
+                        <div id="tile-6" class="board-tile border-r-4 border-rose-300">
+                            <span class="text-sm">🌐</span>
+                            <span class="text-[7px] text-slate-600">Teknologi</span>
+                            <span id="owner-6" class="hidden owned-tag"></span>
+                        </div>
+
+                        <!-- ROW 4 (Left col index 13, Right col index 7) -->
+                        <div id="tile-13" class="board-tile border-l-4 border-blue-300">
+                            <span class="text-sm">📐</span>
+                            <span class="text-[7px] text-slate-600">Geometri</span>
+                            <span id="owner-13" class="hidden owned-tag"></span>
+                        </div>
+                        <div id="tile-7" class="board-tile border-r-4 border-purple-300">
+                            <span class="text-sm">📚</span>
+                            <span class="text-[7px] text-slate-600">Perpus</span>
+                            <span id="owner-7" class="hidden owned-tag"></span>
+                        </div>
+
+                        <!-- ROW 5 (Bottom Row: Indices 12, 11, 10, 9, 8 from Right to Left) -->
+                        <div id="tile-12" class="board-tile border-b-4 border-purple-300">
+                            <span class="text-sm">🏛️</span>
+                            <span class="text-[7px] text-slate-600">Museum</span>
+                            <span id="owner-12" class="hidden owned-tag"></span>
+                        </div>
+                        <div id="tile-11" class="board-tile border-b-4 border-emerald-300">
+                            <span class="text-sm">🔬</span>
+                            <span class="text-[7px] text-slate-600">Lab Kimia</span>
+                            <span id="owner-11" class="hidden owned-tag"></span>
+                        </div>
+                        <div id="tile-10" class="board-tile border-b-4 border-amber-300 bg-amber-50/50">
+                            <span class="text-sm">⭐</span>
+                            <span class="text-[7px] text-amber-600">Pajak</span>
+                        </div>
+                        <div id="tile-9" class="board-tile border-b-4 border-blue-300">
+                            <span class="text-sm">💻</span>
+                            <span class="text-[7px] text-slate-600">Coding</span>
+                            <span id="owner-9" class="hidden owned-tag"></span>
+                        </div>
+                        <div id="tile-8" class="board-tile border-b-4 border-rose-300 bg-rose-50/50">
+                            <span class="text-sm">🛑</span>
+                            <span class="text-[7px] text-rose-500">Istirahat</span>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Control Panel & Dice Section -->
+                <div class="mt-2 bg-white/90 backdrop-blur border border-slate-100 rounded-2xl p-3 flex flex-col gap-2 shadow-xs">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div id="diceBox" class="dice-box w-12 h-12 rounded-2xl flex items-center justify-center text-2xl font-black text-white shadow-md">
+                                🎲
+                            </div>
+                            <div>
+                                <div class="text-[10px] text-slate-400 font-medium">Kotak Dadu:</div>
+                                <div id="diceResult" class="text-xs font-bold text-slate-700">Siap Lempar</div>
+                            </div>
+                        </div>
+                        <button id="rollBtn" onclick="rollDice()" class="android-btn px-5 py-3.5 bg-gradient-to-r from-rose-400 to-pink-500 text-white font-extrabold rounded-xl shadow-md shadow-rose-400/25 text-xs flex items-center gap-1.5 tracking-wide">
+                            <span>🎲</span> Lempar Dadu
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Modal Action: Property Buy / Pay Rent / Quiz -->
+            <div id="actionModal" class="hidden absolute inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex flex-col justify-center p-4">
+                <div class="bg-white border border-slate-100 rounded-3xl p-5 shadow-xl flex flex-col max-h-full">
+                    <div id="modalHeaderBadge" class="self-start px-3 py-1 bg-rose-50 border border-rose-100 text-rose-500 rounded-full text-xs font-semibold mb-2">
+                        Kotak Papan
+                    </div>
+                    <h3 id="modalTitle" class="text-sm font-bold text-slate-800 mb-2 leading-tight">
+                        Judul Kotak
+                    </h3>
+                    <p id="modalDescription" class="text-xs text-slate-500 mb-4 leading-relaxed">
+                        Detail aksi papan monopoli...
+                    </p>
+                    <div id="modalActionButtons" class="space-y-2.5">
+                        <!-- Dynamic Action Buttons -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quiz Modal (Educational Question Card) -->
+            <div id="quizModal" class="hidden absolute inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex flex-col justify-center p-4">
+                <div class="bg-white border border-slate-100 rounded-3xl p-5 shadow-xl flex flex-col max-h-full">
+                    <div class="flex justify-between items-center mb-3">
+                        <span id="quizCategoryBadge" class="px-3 py-1 bg-emerald-50 border border-emerald-100 text-emerald-600 rounded-full text-xs font-semibold">
+                            Kuis Papan Edukasi
+                        </span>
+                        <span class="text-xs text-slate-400">Pertanyaan Pintar</span>
+                    </div>
+                    <h4 id="quizQuestion" class="text-xs font-bold text-slate-800 mb-3 leading-relaxed">
+                        Pertanyaan kuis...
+                    </h4>
+                    <div id="quizOptions" class="space-y-2 mb-3">
+                        <!-- Options generated dynamically -->
+                    </div>
+                    <div id="quizFeedback" class="hidden text-xs p-2.5 rounded-xl mb-2 text-center font-semibold"></div>
+                </div>
+            </div>
+
+            <!-- Game Over Screen -->
+            <div id="gameOverScreen" class="hidden flex flex-col items-center justify-center h-full text-center py-6">
+                <div class="w-20 h-20 bg-gradient-to-tr from-amber-300 to-rose-300 rounded-3xl flex items-center justify-center text-4xl shadow-lg mb-4 animate-bounce">
+                    🏆
+                </div>
+                <h2 class="text-2xl font-bold text-slate-800 mb-1">Permainan Selesai!</h2>
+                <p class="text-slate-500 text-xs mb-5">Hebat! Anda telah menyelesaikan petualangan Papan Monapoliy Edukasi Pastel.</p>
+                
+                <div class="bg-white/90 border border-slate-100 rounded-2xl p-4 w-full mb-5 space-y-3 text-left shadow-xs">
+                    <div class="flex justify-between text-xs">
+                        <span class="text-slate-400">Total Skor Akhir:</span>
+                        <span id="finalScore" class="font-bold text-amber-600">0</span>
+                    </div>
+                    <div class="flex justify-between text-xs">
+                        <span class="text-slate-400">Total Uang:</span>
+                        <span id="finalMoney" class="font-bold text-emerald-600">0</span>
+                    </div>
+                    <div class="flex justify-between text-xs">
+                        <span class="text-slate-400">Properti Dikuasai:</span>
+                        <span id="finalProperties" class="font-bold text-indigo-600">0</span>
+                    </div>
+                </div>
+
+                <button onclick="resetGame()" class="android-btn w-full py-4 bg-gradient-to-r from-rose-400 to-pink-500 text-white font-extrabold rounded-xl shadow-md shadow-rose-400/25 text-sm flex items-center justify-center gap-2 tracking-wide">
+                    <span>🔄</span> Mainkan Papan Lagi
+                </button>
+            </div>
+
+        </div>
+
+        <!-- Android Navigation Home Bar -->
+        <div class="bg-white py-3 flex justify-center items-center border-t border-slate-100 z-30">
+            <div class="w-32 h-1 bg-slate-200 rounded-full"></div>
+        </div>
+
+    </div>
+
+    <!-- Game Logic Script -->
+    <script>
+        let score = 0;
+        let money = 2500;
+        let currentPosition = 0;
+        let currentTurn = 1;
+        let maxTurns = 15;
+        let isMoving = false;
+        let properties = {};
+
+        const tileCoordinates = [
+            { row: 1, col: 1, type: 'start', name: 'Start', price: 0 },
+            { row: 1, col: 2, type: 'property', name: 'Sains Bio', price: 400, rent: 80 },
+            { row: 1, col: 3, type: 'chance', name: 'Dana Umum', price: 0 },
+            { row: 1, col: 4, type: 'property', name: 'Fisika', price: 450, rent: 90 },
+            { row: 1, col: 5, type: 'property', name: 'Sejarah', price: 500, rent: 100 },
+            { row: 2, col: 5, type: 'property', name: 'Aljabar', price: 350, rent: 70 },
+            { row: 3, col: 5, type: 'property', name: 'Teknologi', price: 550, rent: 110 },
+            { row: 4, col: 5, type: 'property', name: 'Perpus', price: 300, rent: 60 },
+            { row: 5, col: 5, type: 'jail', name: 'Istirahat', price: 0 },
+            { row: 5, col: 4, type: 'property', name: 'Coding', price: 450, rent: 90 },
+            { row: 5, col: 3, type: 'tax', name: 'Pajak', price: 200 },
+            { row: 5, col: 2, type: 'property', name: 'Lab Kimia', price: 400, rent: 80 },
+            { row: 5, col: 1, type: 'property', name: 'Museum', price: 500, rent: 100 },
+            { row: 4, col: 1, type: 'property', name: 'Geometri', price: 350, rent: 70 },
+            { row: 3, col: 1, type: 'chance', name: 'Pojok Ide', price: 0 },
+            { row: 2, col: 1, type: 'property', name: 'Geografi', price: 400, rent: 80 }
+        ];
+
+        // Expanded Educational Questions Database (Lebih Banyak & Beraneka Ragam)
+        const educationalQuestions = [
+            { q: "Planet manakah yang paling dekat dengan Matahari di Tata Surya?", options: ["Venus", "Merkurius", "Bumi", "Mars"], answer: 1, explanation: "Merkurius adalah planet terdekat dari Matahari." },
+            { q: "Berapa hasil dari 15 dikali 6?", options: ["80", "90", "100", "85"], answer: 1, explanation: "15 x 6 = 90." },
+            { q: "Siapakah penemu mesin uap yang memicu Revolusi Industri?", options: ["James Watt", "Thomas Edison", "Isaac Newton", "Alexander Fleming"], answer: 0, explanation: "James Watt menyempurnakan mesin uap." },
+            { q: "Apa nama zat hijau daun yang berperan penting dalam fotosintesis?", options: ["Klorofil", "Kloroplas", "Stomata", "Kambium"], answer: 0, explanation: "Klorofil adalah pigmen hijau pada tumbuhan." },
+            { q: "Ibu kota negara Australia adalah...", options: ["Sydney", "Melbourne", "Canberra", "Perth"], answer: 2, explanation: "Canberra adalah ibu kota resmi Australia." },
+            { q: "Berapa jumlah sudut dalam sebuah segitiga?", options: ["180 derajat", "360 derajat", "90 derajat", "270 derajat"], answer: 0, explanation: "Total sudut dalam segitiga selalu 180 derajat." },
+            { q: "Unsur kimia dengan lambang 'O' adalah...", options: ["Emas", "Oksigen", "Osmium", "Ozon"], answer: 1, explanation: "'O' adalah lambang unsur kimia Oksigen." },
+            { q: "Garis khatulistiwa melewati salah satu kota besar di Indonesia berikut ini:", options: ["Pontianak", "Jakarta", "Surabaya", "Denpasar"], answer: 0, explanation: "Pontianak dikenal sebagai Kota Khatulistiwa." },
+            { q: "Berapakah nilai dari 2 pangkat 5 (2⁵)?", options: ["16", "32", "64", "128"], answer: 1, explanation: "2 x 2 x 2 x 2 x 2 = 32." },
+            { q: "Lapisan atmosfer bumi yang paling dekat dengan permukaan tanah adalah...", options: ["Stratosfer", "Troposfer", "Mesosfer", "Ionosfer"], answer: 1, explanation: "Troposfer adalah lapisan terendah tempat terjadinya cuaca." },
+            { q: "Siapakah penulis novel sastra klasik Indonesia 'Laskar Pelangi'?", options: ["Pramoedya Ananta Toer", "Andrea Hirata", "Chairil Anwar", "Habiburrahman El Shirazy"], answer: 1, explanation: "'Laskar Pelangi' ditulis oleh Andrea Hirata." },
+            { q: "Benua terluas di permukaan bumi adalah...", options: ["Afrika", "Amerika", "Asia", "Eropa"], answer: 2, explanation: "Asia adalah benua terbesar di dunia." }
+        ];
+
+        function startGame() {
+            document.getElementById('startScreen').classList.add('hidden');
+            document.getElementById('gameScreen').classList.remove('hidden');
+            document.getElementById('gameScreen').classList.add('flex');
+            updateTokenPosition();
+            updateUI();
+        }
+
+        function updateTokenPosition() {
+            const pos = tileCoordinates[currentPosition];
+            const token = document.getElementById('playerToken');
+            token.style.gridRow = pos.row;
+            token.style.gridColumn = pos.col;
+        }
+
+        function updateUI() {
+            document.getElementById('scoreDisplay').innerText = score;
+            document.getElementById('moneyDisplay').innerText = money;
+            document.getElementById('turnDisplay').innerText = `${currentTurn} / ${maxTurns}`;
+        }
+
+        function rollDice() {
+            if (isMoving) return;
+            isMoving = true;
+
+            const diceBox = document.getElementById('diceBox');
+            const rollBtn = document.getElementById('rollBtn');
+            rollBtn.disabled = true;
+            diceBox.classList.add('animate-spin');
+
+            let rollAnimation = setInterval(() => {
+                let tempRoll = Math.floor(Math.random() * 6) + 1;
+                diceBox.innerText = ['⚀','⚁','⚂','⚃','⚄','⚅'][tempRoll - 1];
+            }, 90);
+
+            setTimeout(() => {
+                clearInterval(rollAnimation);
+                const diceVal = Math.floor(Math.random() * 4) + 1;
+                diceBox.innerText = diceVal;
+                document.getElementById('diceResult').innerText = `Maju ${diceVal} langkah`;
+
+                movePlayerSteps(diceVal, () => {
+                    handleTileLanding();
+                });
+            }, 750);
+        }
+
+        function movePlayerSteps(stepsLeft, callback) {
+            if (stepsLeft > 0) {
+                let prevPos = currentPosition;
+                currentPosition = (currentPosition + 1) % tileCoordinates.length;
+                
+                if (currentPosition === 0 && prevPos !== 0) {
+                    money += 300;
+                    score += 100;
+                    showNotification("Bonus Melewati Start! +Rp300");
+                }
+
+                updateTokenPosition();
+                setTimeout(() => {
+                    movePlayerSteps(stepsLeft - 1, callback);
+                }, 280);
+            } else {
+                isMoving = false;
+                if (callback) callback();
+            }
+        }
+
+        function handleTileLanding() {
+            const tile = tileCoordinates[currentPosition];
+            document.getElementById('statusMessage').innerText = `Di kotak: ${tile.name}`;
+
+            if (tile.type === 'start') {
+                money += 150;
+                score += 50;
+                updateUI();
+                endTurnFlow();
+            } else if (tile.type === 'tax') {
+                money = Math.max(0, money - 150);
+                score = Math.max(0, score - 30);
+                updateUI();
+                showActionModal("Pajak Papan", "Anda mendarat di Kotak Pajak Ilmu dan wajib membayar kas papan sebesar Rp150.", [
+                    { text: "Bayar Pajak", action: () => closeActionModal() }
+                ]);
+            } else if (tile.type === 'jail') {
+                money = Math.max(0, money - 100);
+                updateUI();
+                showActionModal("Kotak Istirahat", "Anda beristirahat di Kotak Istirahat dan membayar biaya rehat Rp100.", [
+                    { text: "Lanjutkan", action: () => closeActionModal() }
+                ]);
+            } else if (tile.type === 'chance') {
+                triggerQuiz();
+            } else if (tile.type === 'property') {
+                if (properties[currentPosition]) {
+                    const owner = properties[currentPosition].owner;
+                    if (owner === 'player') {
+                        showActionModal("Properti Sendiri", `Ini adalah properti Anda (${tile.name}). Nikmati kenyamanan!`, [
+                            { text: "Lanjutkan", action: () => closeActionModal() }
+                        ]);
+                    } else {
+                        money = Math.max(0, money - tile.rent);
+                        score += 20;
+                        updateUI();
+                        showActionModal("Bayar Sewa Papan", `Properti ini milik lawan! Anda membayar biaya sewa sebesar Rp${tile.rent}.`, [
+                            { text: "Bayar & Lanjut", action: () => closeActionModal() }
+                        ]);
+                    }
+                } else {
+                    if (money >= tile.price) {
+                        showActionModal("Beli Properti Ilmu", `Kotak Papan: <strong>${tile.name}</strong><br>Harga: Rp${tile.price}<br>Sewa: Rp${tile.rent}`, [
+                            { text: `Beli Properti (Rp${tile.price})`, action: () => buyProperty(currentPosition, tile) },
+                            { text: "Jawab Kuis Bonus", action: () => triggerQuiz() }
+                        ]);
+                    } else {
+                        showActionModal("Uang Tidak Cukup", `Anda ingin membeli ${tile.name} seharga Rp${tile.price}, namun uang kurang. Mari ikuti kuis bonus!`, [
+                            { text: "Ikuti Kuis Bonus", action: () => triggerQuiz() }
+                        ]);
+                    }
+                }
+            }
+        }
+
+        function buyProperty(posIndex, tile) {
+            money -= tile.price;
+            score += 150;
+            properties[posIndex] = { name: tile.name, price: tile.price, rent: tile.rent, owner: 'player' };
+            
+            document.getElementById(`owner-${posIndex}`).classList.remove('hidden');
+            updateUI();
+            closeActionModal();
+        }
+
+        function showActionModal(title, desc, buttons) {
+            const modal = document.getElementById('actionModal');
+            modal.classList.remove('hidden');
+            document.getElementById('modalTitle').innerHTML = title;
+            document.getElementById('modalDescription').innerHTML = desc;
+
+            const btnContainer = document.getElementById('modalActionButtons');
+            btnContainer.innerHTML = '';
+
+            buttons.forEach(b => {
+                const btn = document.createElement('button');
+                btn.className = "android-btn w-full py-3.5 bg-rose-400 hover:bg-rose-500 text-white font-bold rounded-xl text-xs shadow-md";
+                btn.innerText = b.text;
+                btn.onclick = b.action;
+                btnContainer.appendChild(btn);
+            });
+        }
+
+        function closeActionModal() {
+            document.getElementById('actionModal').classList.add('hidden');
+            endTurnFlow();
+        }
+
+        function triggerQuiz() {
+            closeActionModal();
+            const modal = document.getElementById('quizModal');
+            modal.classList.remove('hidden');
+
+            const qData = educationalQuestions[Math.floor(Math.random() * educationalQuestions.length)];
+            document.getElementById('quizQuestion').innerText = qData.q;
+
+            const optionsContainer = document.getElementById('quizOptions');
+            optionsContainer.innerHTML = '';
+
+            qData.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "android-btn w-full p-3.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl text-left text-xs font-semibold text-slate-700 transition-all flex items-center justify-between";
+                btn.innerHTML = `<span>${String.fromCharCode(65 + idx)}. ${opt}</span>`;
+                btn.onclick = () => checkQuizAnswer(idx, qData.answer, qData.explanation);
+                optionsContainer.appendChild(btn);
+            });
+
+            document.getElementById('quizFeedback').classList.add('hidden');
+        }
+
+        function checkQuizAnswer(selectedIdx, correctIdx, explanation) {
+            const feedback = document.getElementById('quizFeedback');
+            feedback.classList.remove('hidden');
+
+            const buttons = document.getElementById('quizOptions').getElementsByTagName('button');
+            for (let b of buttons) b.disabled = true;
+
+            if (selectedIdx === correctIdx) {
+                score += 200;
+                money += 400;
+                feedback.className = "text-xs p-3 rounded-xl mb-2 text-center font-semibold bg-emerald-50 border border-emerald-200 text-emerald-600";
+                feedback.innerHTML = `✨ <strong>Benar!</strong> +200 Skor, +Rp400 Hadiah<br><span class="text-[10px] text-slate-500 mt-1 block">${explanation}</span>`;
+            } else {
+                score = Math.max(0, score - 30);
+                feedback.className = "text-xs p-3 rounded-xl mb-2 text-center font-semibold bg-rose-50 border border-rose-200 text-rose-500";
+                feedback.innerHTML = `🌸 <strong>Kurang Tepat.</strong> Jawaban benar: ${buttons[correctIdx].innerText}<br><span class="text-[10px] text-slate-500 mt-1 block">${explanation}</span>`;
+            }
+
+            updateUI();
+
+            setTimeout(() => {
+                const optionsContainer = document.getElementById('quizOptions');
+                const nextBtn = document.createElement('button');
+                nextBtn.className = "android-btn w-full py-3.5 bg-rose-400 hover:bg-rose-500 text-white font-bold rounded-xl text-xs mt-2 shadow-md animate-pulse";
+                nextBtn.innerText = "Lanjutkan Giliran ➔";
+                nextBtn.onclick = () => {
+                    document.getElementById('quizModal').classList.add('hidden');
+                    endTurnFlow();
+                };
+                optionsContainer.appendChild(nextBtn);
+            }, 500);
+        }
+
+        function showNotification(msg) {
+            const statusMsg = document.getElementById('statusMessage');
+            const original = statusMsg.innerText;
+            statusMsg.innerText = msg;
+            statusMsg.classList.add('text-emerald-600');
+            setTimeout(() => {
+                statusMsg.innerText = original;
+                statusMsg.classList.remove('text-emerald-600');
+            }, 3000);
+        }
+
+        function endTurnFlow() {
+            currentTurn++;
+            if (currentTurn > maxTurns) {
+                document.getElementById('gameScreen').classList.add('hidden');
+                document.getElementById('gameOverScreen').classList.remove('hidden');
+                document.getElementById('finalScore').innerText = score;
+                document.getElementById('finalMoney').innerText = `Rp${money}`;
+                document.getElementById('finalProperties').innerText = Object.keys(properties).length;
+            } else {
+                updateUI();
+                document.getElementById('rollBtn').disabled = false;
+                document.getElementById('statusMessage').innerText = "Lempar dadu untuk melanjutkan!";
+            }
+        }
+
+        function resetGame() {
+            score = 0;
+            money = 2500;
+            currentPosition = 0;
+            currentTurn = 1;
+            properties = {};
+            
+            for (let i = 0; i < 16; i++) {
+                const tag = document.getElementById(`owner-${i}`);
+                if (tag) tag.classList.add('hidden');
+            }
+
+            document.getElementById('gameOverScreen').classList.add('hidden');
+            startGame();
+        }
+    </script>
+</body>
+</html>
